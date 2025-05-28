@@ -47,6 +47,7 @@ interface ApplicationDetailsState {
     statusExtensionsMap?: {[key: string]: StatusPanelExtension};
     topBarActionMenuExts?: TopBarActionMenuExt[];
     topBarActionMenuExtsMap?: {[key: string]: TopBarActionMenuExt};
+    appDropdownOpened: boolean;
 }
 
 interface FilterInput {
@@ -93,6 +94,7 @@ export class ApplicationDetails extends React.Component<RouteComponentProps<{app
             filteredGraph: [],
             truncateNameOnRight: false,
             collapsedNodes: [],
+            appDropdownOpened: false,
             ...this.getExtensionsState()
         };
     }
@@ -612,7 +614,15 @@ export class ApplicationDetails extends React.Component<RouteComponentProps<{app
                                         toolbar={{
                                             breadcrumbs: [
                                                 {title: 'Applications', path: '/applications'},
-                                                {title: <ApplicationsDetailsAppDropdown appName={this.props.match.params.name} />}
+                                                {
+                                                    title: (
+                                                        <ApplicationsDetailsAppDropdown
+                                                            appName={this.props.match.params.name}
+                                                            opened={this.state.appDropdownOpened}
+                                                            setOpened={opened => this.setState({appDropdownOpened: opened})}
+                                                        />
+                                                    )
+                                                }
                                             ],
                                             actionMenu: {
                                                 items: [

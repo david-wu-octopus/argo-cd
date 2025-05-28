@@ -7,8 +7,7 @@ import {getAppUrl} from '../utils';
 
 import './application-details-app-dropdown.scss';
 
-export const ApplicationsDetailsAppDropdown = (props: {appName: string}) => {
-    const [opened, setOpened] = React.useState(false);
+export const ApplicationsDetailsAppDropdown = (props: {appName: string; opened: boolean; setOpened: (opened: boolean) => void}) => {
     const [appFilter, setAppFilter] = React.useState('');
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const ctx = React.useContext(Context);
@@ -23,12 +22,6 @@ export const ApplicationsDetailsAppDropdown = (props: {appName: string}) => {
             });
         }
     }, [selectedIndex]);
-
-    React.useEffect(() => {
-        setOpened(false);
-        setAppFilter('');
-        setSelectedIndex(0);
-    }, [props.appName]);
 
     const handleKeyDown = (e: React.KeyboardEvent, filteredApps: any[]) => {
         switch (e.key) {
@@ -50,18 +43,14 @@ export const ApplicationsDetailsAppDropdown = (props: {appName: string}) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (filteredApps[selectedIndex]) {
-                    setOpened(false);
                     ctx.navigation.goto(`/${getAppUrl(filteredApps[selectedIndex])}`);
                 }
                 break;
         }
     };
 
-    console.log('opened', opened);
-
     return (
         <DataLoader
-            key={`${props.appName}-${Date.now()}`}
             load={() => {
                 console.log('Loading applications for dropdown');
                 console.log(services.applications.list([], {fields: ['items.metadata.name', 'items.metadata.namespace']}));
@@ -77,15 +66,14 @@ export const ApplicationsDetailsAppDropdown = (props: {appName: string}) => {
 
                 return (
                     <DropDown
-                        key={props.appName}
-                        onOpenStateChange={setOpened}
+                        onOpenStateChange={props.setOpened}
                         isMenu={true}
                         anchor={() => (
                             <>
                                 <i className='fa fa-search' /> <span>{props.appName}</span>
                             </>
                         )}>
-                        {opened && (
+                        {props.opened && (
                             <ul className='application-details-app-dropdown'>
                                 <li className='application-details-app-dropdown__search'>
                                     <input
@@ -108,7 +96,6 @@ export const ApplicationsDetailsAppDropdown = (props: {appName: string}) => {
                                         <li
                                             key={app.metadata.name}
                                             onClick={() => {
-                                                setOpened(false);
                                                 ctx.navigation.goto(`/${getAppUrl(app)}`);
                                             }}
                                             className={`application-details-app-dropdown__item ${index === selectedIndex ? 'selected' : ''}`}
