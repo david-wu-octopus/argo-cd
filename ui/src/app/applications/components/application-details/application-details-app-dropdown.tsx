@@ -1,13 +1,13 @@
-import {DataLoader, DropDown} from 'argo-ui';
+import {DropDown} from 'argo-ui';
 import * as React from 'react';
 
 import {Context} from '../../../shared/context';
-import {services} from '../../../shared/services';
 import {getAppUrl} from '../utils';
+import {ApplicationList} from '../../../shared/models';
 
 import './application-details-app-dropdown.scss';
 
-export const ApplicationsDetailsAppDropdown = (props: {appName: string; opened: boolean; setOpened: (opened: boolean) => void}) => {
+export const ApplicationsDetailsAppDropdown = (props: {appName: string; opened: boolean; setOpened: (opened: boolean) => void; apps: ApplicationList}) => {
     const [appFilter, setAppFilter] = React.useState('');
     const [selectedIndex, setSelectedIndex] = React.useState(0);
     const ctx = React.useContext(Context);
@@ -49,67 +49,55 @@ export const ApplicationsDetailsAppDropdown = (props: {appName: string; opened: 
         }
     };
 
+    const filteredApps = props.apps.items
+        .filter(app => {
+            return appFilter.length === 0 || app.metadata.name.toLowerCase().includes(appFilter.toLowerCase());
+        })
+        .slice(0, 100);
+
     return (
-        <DataLoader
-            load={() => {
-                console.log('Loading applications for dropdown');
-                console.log(services.applications.list([], {fields: ['items.metadata.name', 'items.metadata.namespace']}));
-
-                return services.applications.list([], {fields: ['items.metadata.name', 'items.metadata.namespace']});
-            }}>
-            {apps => {
-                const filteredApps = apps.items
-                    .filter(app => {
-                        return appFilter.length === 0 || app.metadata.name.toLowerCase().includes(appFilter.toLowerCase());
-                    })
-                    .slice(0, 100);
-
-                return (
-                    <DropDown
-                        onOpenStateChange={props.setOpened}
-                        isMenu={true}
-                        anchor={() => (
-                            <>
-                                <i className='fa fa-search' /> <span>{props.appName}</span>
-                            </>
-                        )}>
-                        {props.opened && (
-                            <ul className='application-details-app-dropdown'>
-                                <li className='application-details-app-dropdown__search'>
-                                    <input
-                                        className='argo-field'
-                                        value={appFilter}
-                                        onChange={e => setAppFilter(e.target.value)}
-                                        onKeyDown={e => handleKeyDown(e, filteredApps)}
-                                        ref={el =>
-                                            el &&
-                                            setTimeout(() => {
-                                                if (el) {
-                                                    el.focus();
-                                                }
-                                            }, 100)
-                                        }
-                                    />
-                                </li>
-                                <div className='application-details-app-dropdown__list'>
-                                    {filteredApps.map((app, index) => (
-                                        <li
-                                            key={app.metadata.name}
-                                            onClick={() => {
-                                                ctx.navigation.goto(`/${getAppUrl(app)}`);
-                                            }}
-                                            className={`application-details-app-dropdown__item ${index === selectedIndex ? 'selected' : ''}`}
-                                            onMouseEnter={() => setSelectedIndex(index)}
-                                            ref={index === selectedIndex ? selectedRef : null}>
-                                            {app.metadata.name} {app.metadata.name === props.appName && ' (current)'}
-                                        </li>
-                                    ))}
-                                </div>
-                            </ul>
-                        )}
-                    </DropDown>
-                );
-            }}
-        </DataLoader>
+        <DropDown
+            onOpenStateChange={props.setOpened}
+            isMenu={true}
+            anchor={() => (
+                <>
+                    <i className='fa fa-search' /> <span>{props.appName}</span>
+                </>
+            )}>
+            {props.opened && (
+                <ul className='application-details-app-dropdown'>
+                    <li className='application-details-app-dropdown__search'>
+                        <input
+                            className='argo-field'
+                            value={appFilter}
+                            onChange={e => setAppFilter(e.target.value)}
+                            onKeyDown={e => handleKeyDown(e, filteredApps)}
+                            ref={el =>
+                                el &&
+                                setTimeout(() => {
+                                    if (el) {
+                                        el.focus();
+                                    }
+                                }, 100)
+                            }
+                        />
+                    </li>
+                    <div className='application-details-app-dropdown__list'>
+                        {filteredApps.map((app, index) => (
+                            <li
+                                key={app.metadata.name}
+                                onClick={() => {
+                                    ctx.navigation.goto(`/${getAppUrl(app)}`);
+                                }}
+                                className={`application-details-app-dropdown__item ${index === selectedIndex ? 'selected' : ''}`}
+                                onMouseEnter={() => setSelectedIndex(index)}
+                                ref={index === selectedIndex ? selectedRef : null}>
+                                {app.metadata.name} {app.metadata.name === props.appName && ' (current)'}
+                            </li>
+                        ))}
+                    </div>
+                </ul>
+            )}
+        </DropDown>
     );
 };

@@ -616,11 +616,20 @@ export class ApplicationDetails extends React.Component<RouteComponentProps<{app
                                                 {title: 'Applications', path: '/applications'},
                                                 {
                                                     title: (
-                                                        <ApplicationsDetailsAppDropdown
-                                                            appName={this.props.match.params.name}
-                                                            opened={this.state.appDropdownOpened}
-                                                            setOpened={opened => this.setState({appDropdownOpened: opened})}
-                                                        />
+                                                        <DataLoader
+                                                            load={() => {
+                                                                console.log('Loading applications for dropdown');
+                                                                return services.applications.list([], {fields: ['items.metadata.name', 'items.metadata.namespace']});
+                                                            }}>
+                                                            {apps => (
+                                                                <ApplicationsDetailsAppDropdown
+                                                                    appName={this.props.match.params.name}
+                                                                    opened={this.state.appDropdownOpened}
+                                                                    setOpened={opened => this.setState({appDropdownOpened: opened})}
+                                                                    apps={apps}
+                                                                />
+                                                            )}
+                                                        </DataLoader>
                                                     )
                                                 }
                                             ],
